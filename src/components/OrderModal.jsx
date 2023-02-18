@@ -7,8 +7,20 @@ function OrderModal({ order, setOrderModal }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [valid, setValid] = useState(true)
+  const [nameValid, setNameValid] = useState(true)
+  const [phoneValid, setPhoneValid] = useState(true)
+  const [addressValid, setAddressValid] = useState(true)
+
+  // const placeOrder = () => { // dummy placeOrder function for testing
+  //   console.log("All good", order, name, formattedPhone, address)
+  // }
 
   const placeOrder = async () => {
+    const onlyNumberPhone = phone.replace(/\D/g, '')
+    // eslint-disable-next-line max-len
+    const formattedPhone = `(${onlyNumberPhone.slice(0, 3)}) ${onlyNumberPhone.slice(3, 6)}-${onlyNumberPhone.slice(6, 10)}`
+
     const response = await fetch("/api/orders", {
       method: "POST",
       headers: {
@@ -16,17 +28,57 @@ function OrderModal({ order, setOrderModal }) {
       },
       body: JSON.stringify({
         name,
-        phone,
+        phone: formattedPhone,
         address,
         items: order
       })
     });
     const data = await response.json();
     const id = await data.id
-
     if (response.ok) navigate(`/order-confirmation/${id}`)
-
   };
+
+
+  const checkValid = (cName, cPhone, cAddress) => {
+    if (cName.trim().length > 0
+      && cPhone.trim().length > 0
+      && cAddress.trim().length > 0) {
+      setValid(true)
+      setNameValid(true)
+      setPhoneValid(true)
+      setAddressValid(true)
+      placeOrder()
+    }
+    else {
+      setValid(false)
+      if (name.trim().length <= 0) setNameValid(false)
+      if (phone.trim().length <= 0) setPhoneValid(false)
+      if (address.trim().length <= 0) setAddressValid(false)
+    }
+  }
+
+  const handleName = (e) => {
+    e.preventDefault();
+    setName(e.target.value);
+    if (e.target.value.trim().length > 0) setNameValid(true)
+    else setNameValid(false)
+  }
+
+  const handlePhone = (e) => {
+    e.preventDefault()
+    const pattern = /^[0-9\b()-]+$/
+    if (e.target.value === '' || pattern.test(e.target.value)) setPhone(e.target.value)
+    if (e.target.value.length > 0) setPhoneValid(true)
+    else setPhoneValid(false)
+  }
+
+  const handleAddress = (e) => {
+    e.preventDefault();
+    setAddress(e.target.value);
+    if (e.target.value.trim().length > 0) setAddressValid(true)
+    else setAddressValid(false)
+  }
+
   return (
     <>
       <div
@@ -46,44 +98,44 @@ function OrderModal({ order, setOrderModal }) {
         <form className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="name">
-              Name
+              Name {!nameValid && <span className={styles.invalid}>*</span>}
               <input
-                onChange={(e) => {
-                  e.preventDefault();
-                  setName(e.target.value);
-                }}
+                onChange={handleName}
                 type="text"
                 id="name"
+                value={name}
               />
             </label>
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="phone">
-              Phone
+              Phone {!phoneValid && <span className={styles.invalid}>*</span>}
               <input
-                onChange={(e) => {
-                  e.preventDefault();
-                  setPhone(e.target.value);
-                }}
+                onChange={handlePhone}
+                value={phone}
                 type="phone"
                 id="phone"
+
               />
             </label>
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="address">
-              Address
+              Address {!addressValid && <span className={styles.invalid}>*</span>}
               <input
-                onChange={(e) => {
-                  e.preventDefault();
-                  setAddress(e.target.value);
-                }}
+                onChange={handleAddress}
                 type="phone"
                 id="address"
               />
             </label>
           </div>
         </form>
+
+        {!valid &&
+          <div className={styles.invalidText}>
+            <p>Please fill in the fields with required values!</p>
+          </div>
+        }
 
         <div className={styles.orderModalButtons}>
           <button
@@ -94,7 +146,8 @@ function OrderModal({ order, setOrderModal }) {
           </button>
           <button
             onClick={() => {
-              placeOrder();
+              checkValid(name, phone, address)
+              // console.log(valid)
             }}
             className={styles.orderModalPlaceOrder}
           >
