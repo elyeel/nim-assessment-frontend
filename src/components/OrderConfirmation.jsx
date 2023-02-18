@@ -1,7 +1,7 @@
 import styles from "./styles/Confirmation.module.css"
 
 export default function OrderConfirmation({ order }) {
-  const { _id, name, address, items } = order
+  const { id, name, address, items } = order
   // console.log(_id, name, address, phone, items)
 
   const displayItems =
@@ -18,9 +18,9 @@ export default function OrderConfirmation({ order }) {
   return (
     <div className={styles.orderConfirmation}>
       <div className={styles.customerInfo}>
-        <p>Thank you for your order {name}!</p>
-        <p>Order ID: {_id}</p>
-        <p>Address: {address}</p>
+        <p>Thank you for your order <span>{name}</span>!</p>
+        <p>Order ID: <span>{id}</span></p>
+        <p>Address: <span>{address}</span></p>
       </div>
 
       <ul className={styles.itemListContainer}>
